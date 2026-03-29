@@ -1,169 +1,139 @@
 'use client';
 
 import { useState } from 'react';
-import Navbar from '@/components/Navbar';
-import { DAYS } from '@/lib/types';
+import Link from 'next/link';
+
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function SettingsPage() {
-  const [displayName, setDisplayName] = useState('');
-  const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('Demo User');
+  const [slug, setSlug] = useState('demo-user');
+  const [bio, setBio] = useState('Book a meeting with me');
   const [timezone, setTimezone] = useState('America/New_York');
-  const [plan, setPlan] = useState<'free' | 'pro'>('free');
-  const [availability, setAvailability] = useState<Record<number, boolean>>({
-    0: false, 1: true, 2: true, 3: true, 4: true, 5: true, 6: false,
-  });
-  const [workStart, setWorkStart] = useState('09:00');
-  const [workEnd, setWorkEnd] = useState('17:00');
-  const [notifications, setNotifications] = useState({
-    newBooking: true,
-    cancellation: true,
-    reminder: true,
-    dailyDigest: false,
-  });
-  const [saving, setSaving] = useState(false);
-
-  async function handleSave() {
-    setSaving(true);
-    await new Promise(r => setTimeout(r, 1000));
-    setSaving(false);
-  }
-
-  const inputClass = "w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-foreground placeholder-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm";
+  const [availability, setAvailability] = useState(
+    DAYS.map((_, i) => ({ active: i > 0 && i < 6, start: '09:00', end: '17:00' }))
+  );
+  const [bufferMinutes, setBufferMinutes] = useState(15);
+  const [emailConfirmations, setEmailConfirmations] = useState(true);
+  const [dailyDigest, setDailyDigest] = useState(true);
 
   return (
-    <>
-      <Navbar />
-      <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+    <div className="min-h-screen bg-background">
+      <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+        <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
+          <Link href="/dashboard" className="font-bold tracking-tight">
+            <span className="bg-gradient-to-r from-accent-light to-accent bg-clip-text text-transparent">Schedule</span>
+            <span>Pulse</span>
+          </Link>
+          <Link href="/dashboard" className="text-sm text-muted hover:text-foreground">Back to Dashboard</Link>
+        </div>
+      </nav>
+
+      <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+        <h1 className="text-2xl font-bold">Settings</h1>
 
         {/* Profile */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Profile</h2>
-          <div className="glow-card p-5 space-y-3">
+        <div className="glow-card p-6">
+          <h2 className="font-semibold mb-4">Profile</h2>
+          <div className="space-y-3">
             <div>
-              <label className="text-xs text-muted mb-1.5 block">Display Name</label>
-              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Jane Smith" className={inputClass} />
+              <label className="block text-sm text-muted mb-1">Display Name</label>
+              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-accent" />
             </div>
             <div>
-              <label className="text-xs text-muted mb-1.5 block">Booking URL</label>
-              <div className="flex items-center bg-surface border border-border rounded-xl overflow-hidden">
-                <span className="px-3 text-sm text-muted bg-surface-hover border-r border-border">schedulepulse.app/</span>
-                <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="janesmith"
-                  className="flex-1 px-3 py-2.5 bg-transparent text-foreground text-sm focus:outline-none" />
+              <label className="block text-sm text-muted mb-1">Booking URL</label>
+              <div className="flex items-center">
+                <span className="text-sm text-muted bg-surface px-3 py-2.5 rounded-l-lg border border-r-0 border-border">schedulepulse.com/book/</span>
+                <input type="text" value={slug} onChange={e => setSlug(e.target.value)} className="flex-1 bg-background border border-border rounded-r-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-accent" />
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted mb-1.5 block">Timezone</label>
-              <select value={timezone} onChange={e => setTimezone(e.target.value)} className={inputClass}>
-                <option value="America/New_York">Eastern Time (ET)</option>
-                <option value="America/Chicago">Central Time (CT)</option>
-                <option value="America/Denver">Mountain Time (MT)</option>
-                <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                <option value="Europe/London">London (GMT)</option>
-                <option value="Europe/Berlin">Berlin (CET)</option>
-                <option value="Asia/Tokyo">Tokyo (JST)</option>
+              <label className="block text-sm text-muted mb-1">Bio</label>
+              <textarea value={bio} onChange={e => setBio(e.target.value)} rows={2} className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-accent resize-none" />
+            </div>
+            <div>
+              <label className="block text-sm text-muted mb-1">Timezone</label>
+              <select value={timezone} onChange={e => setTimezone(e.target.value)} className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-accent">
+                {['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Berlin', 'Asia/Tokyo', 'Australia/Sydney'].map(tz => (
+                  <option key={tz} value={tz}>{tz.replace('_', ' ')}</option>
+                ))}
               </select>
             </div>
           </div>
-        </section>
+        </div>
 
         {/* Availability */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Availability</h2>
-          <div className="glow-card p-5 space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-muted mb-1.5 block">Start time</label>
-                <input type="time" value={workStart} onChange={e => setWorkStart(e.target.value)} className={inputClass} />
+        <div className="glow-card p-6">
+          <h2 className="font-semibold mb-4">Availability</h2>
+          <div className="space-y-3">
+            {DAYS.map((day, i) => (
+              <div key={day} className="flex items-center gap-3">
+                <button
+                  onClick={() => setAvailability(a => a.map((d, j) => j === i ? { ...d, active: !d.active } : d))}
+                  className={`w-11 h-6 rounded-full relative flex-shrink-0 ${availability[i].active ? 'bg-accent' : 'bg-border'}`}
+                >
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${availability[i].active ? 'left-5.5' : 'left-0.5'}`} />
+                </button>
+                <span className="text-sm w-24">{day}</span>
+                {availability[i].active ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <input type="time" value={availability[i].start} onChange={e => setAvailability(a => a.map((d, j) => j === i ? { ...d, start: e.target.value } : d))} className="bg-background border border-border rounded px-2 py-1 text-foreground" />
+                    <span className="text-muted">to</span>
+                    <input type="time" value={availability[i].end} onChange={e => setAvailability(a => a.map((d, j) => j === i ? { ...d, end: e.target.value } : d))} className="bg-background border border-border rounded px-2 py-1 text-foreground" />
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted">Unavailable</span>
+                )}
               </div>
-              <div>
-                <label className="text-xs text-muted mb-1.5 block">End time</label>
-                <input type="time" value={workEnd} onChange={e => setWorkEnd(e.target.value)} className={inputClass} />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs text-muted mb-2 block">Available days</label>
-              <div className="flex gap-2">
-                {DAYS.map((day, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setAvailability(prev => ({ ...prev, [i]: !prev[i] }))}
-                    className={`w-10 h-10 rounded-lg text-xs font-medium transition-all ${
-                      availability[i]
-                        ? 'bg-accent text-white'
-                        : 'bg-surface border border-border text-muted'
-                    }`}
-                  >
-                    {day.slice(0, 2)}
-                  </button>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-        </section>
+          <div className="mt-4">
+            <label className="block text-sm text-muted mb-1">Buffer between meetings</label>
+            <select value={bufferMinutes} onChange={e => setBufferMinutes(Number(e.target.value))} className="bg-background border border-border rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-accent">
+              {[0, 5, 10, 15, 30, 60].map(m => (
+                <option key={m} value={m}>{m === 0 ? 'No buffer' : `${m} minutes`}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* Notifications */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Notifications</h2>
-          <div className="glow-card p-5 space-y-3">
+        <div className="glow-card p-6">
+          <h2 className="font-semibold mb-4">Notifications</h2>
+          <div className="space-y-4">
             {[
-              { key: 'newBooking' as const, label: 'New booking', desc: 'Email when someone books a meeting' },
-              { key: 'cancellation' as const, label: 'Cancellation', desc: 'Alert when a booking is cancelled' },
-              { key: 'reminder' as const, label: 'Meeting reminder', desc: 'Reminder 15 min before each meeting' },
-              { key: 'dailyDigest' as const, label: 'Daily schedule', desc: 'Your schedule for the day each morning' },
-            ].map(item => (
-              <label key={item.key} className="flex items-center justify-between cursor-pointer py-1">
+              { label: 'Email Confirmations', desc: 'Get notified when someone books', checked: emailConfirmations, onChange: setEmailConfirmations },
+              { label: 'Daily Digest', desc: 'Summary of tomorrow\'s bookings', checked: dailyDigest, onChange: setDailyDigest },
+            ].map(t => (
+              <div key={t.label} className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm text-foreground">{item.label}</span>
-                  <p className="text-xs text-muted">{item.desc}</p>
+                  <p className="text-sm font-medium">{t.label}</p>
+                  <p className="text-xs text-muted">{t.desc}</p>
                 </div>
-                <div className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${notifications[item.key] ? 'bg-accent' : 'bg-border-light'}`}
-                  onClick={() => setNotifications(prev => ({ ...prev, [item.key]: !prev[item.key] }))}>
-                  <div className={`w-4 h-4 rounded-full bg-white mt-0.5 transition-transform ${notifications[item.key] ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                </div>
-              </label>
+                <button onClick={() => t.onChange(!t.checked)} className={`w-11 h-6 rounded-full relative ${t.checked ? 'bg-accent' : 'bg-border'}`}>
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${t.checked ? 'left-5.5' : 'left-0.5'}`} />
+                </button>
+              </div>
             ))}
           </div>
-        </section>
+        </div>
 
         {/* Subscription */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">Subscription</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { id: 'free' as const, name: 'Free', price: '$0', features: '1 event type, 5 bookings/mo' },
-              { id: 'pro' as const, name: 'Pro', price: '$7/mo', features: 'Unlimited events, calendar sync, reminders' },
-            ].map(tier => (
-              <button key={tier.id} onClick={() => setPlan(tier.id)}
-                className={`glow-card p-4 text-left transition-all ${plan === tier.id ? '!border-accent' : ''}`}>
-                <h3 className="text-sm font-semibold text-foreground">{tier.name}</h3>
-                <p className="text-lg font-bold text-accent mt-1">{tier.price}</p>
-                <p className="text-xs text-muted mt-2">{tier.features}</p>
-                {plan === tier.id && <span className="text-[10px] text-accent font-medium mt-2 block">Current plan</span>}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Danger zone */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-danger">Danger Zone</h2>
-          <div className="glow-card p-5 !border-danger/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-foreground">Delete account</h3>
-                <p className="text-xs text-muted">Permanently remove your booking page and all data</p>
-              </div>
-              <button className="px-4 py-2 bg-danger/15 text-danger rounded-xl text-xs font-medium hover:bg-danger/25 transition-colors">Delete</button>
+        <div className="glow-card p-6">
+          <h2 className="font-semibold mb-4">Subscription</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Free Plan</p>
+              <p className="text-sm text-muted">1 event type, 10 bookings/month</p>
             </div>
+            <Link href="/upgrade" className="bg-accent hover:bg-accent-light text-white px-4 py-2 rounded-lg text-sm font-medium">
+              Upgrade to Pro
+            </Link>
           </div>
-        </section>
+        </div>
 
-        <button onClick={handleSave} disabled={saving}
-          className="w-full py-3 bg-accent hover:bg-accent-light disabled:opacity-50 rounded-xl font-semibold text-white shadow-lg shadow-accent/25 transition-all">
-          {saving ? 'Saving...' : 'Save Settings'}
-        </button>
+        <button className="bg-accent hover:bg-accent-light text-white px-6 py-2.5 rounded-lg font-medium">Save Changes</button>
       </div>
-    </>
+    </div>
   );
 }
